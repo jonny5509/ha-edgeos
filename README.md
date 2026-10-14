@@ -14,6 +14,12 @@ Provides an integration between EdgeOS (Ubiquiti) routers to Home Assistant.
 
 [Changelog](https://github.com/elad-bar/ha-edgeos/blob/master/CHANGELOG.md)
 
+## Experimental legacy airOS support
+
+The integration can also be configured for legacy Ubiquiti airOS devices, including NanoStation5 firmware 4.0.1. In the Add Integration form, choose **airOS** as the device type. This uses the device's legacy HTTP CGI login and currently exposes wireless signal/noise, CCQ, frequency/channel, link rates, uptime, LAN/WLAN byte counters, and calculated traffic rates.
+
+This support is experimental and needs confirmation on additional airOS hardware and firmware versions. It uses HTTP on port 80 because older devices may not provide HTTPS. Keep the management interface restricted to a trusted local network; do not expose it to the internet.
+
 ## How to
 
 #### Requirements
