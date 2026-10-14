@@ -21,13 +21,13 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .common.base_entity import IntegrationBaseEntity, async_setup_base_entry
 from .common.consts import (
-    DOMAIN,
     ALL_EDGE_OS_UNITS,
     ATTR_ATTRIBUTES,
     ATTR_UNIT_CONVERTOR,
     ATTR_UNIT_INFORMATION,
     ATTR_UNIT_RATE,
     UNIT_MAPPING,
+    DOMAIN,
 )
 from .common.entity_descriptions import IntegrationSensorEntityDescription
 from .common.enums import DeviceTypes
@@ -143,7 +143,6 @@ class IntegrationSensorEntity(IntegrationBaseEntity, SensorEntity):
         result = int(value_str) if digits == 0 else float(value_str)
 
         return result
-
 
 
 AIROS_SENSOR_DESCRIPTIONS = (
