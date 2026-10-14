@@ -363,6 +363,7 @@ class Coordinator(DataUpdateCoordinator):
             EntityKeys.FIRMWARE: self._get_firmware_data,
             EntityKeys.FIRMWARE_UPDATE: self._get_firmware_update_data,
             EntityKeys.LAST_RESTART: self._get_last_restart_data,
+            EntityKeys.UPTIME: self._get_uptime_data,
             EntityKeys.UNKNOWN_DEVICES: self._get_unknown_devices_data,
             EntityKeys.LOG_INCOMING_MESSAGES: self._get_log_incoming_messages_data,
             EntityKeys.CONSIDER_AWAY_INTERVAL: self._get_consider_away_interval_data,
@@ -524,6 +525,11 @@ class Coordinator(DataUpdateCoordinator):
             "release_url": data.upgrade_url,
             "title": "EdgeOS firmware",
         }
+
+    def _get_uptime_data(self, _entity_description) -> dict | None:
+        data = self._system_processor.get()
+
+        return {ATTR_STATE: data.uptime}
 
     def _get_last_restart_data(self, _entity_description) -> dict | None:
         data = self._system_processor.get()

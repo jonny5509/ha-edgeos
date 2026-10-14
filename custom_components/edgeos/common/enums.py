@@ -32,6 +32,7 @@ class EntityKeys(StrEnum):
     FIRMWARE = "firmware"
     FIRMWARE_UPDATE = "firmware_update"
     LAST_RESTART = "last_restart"
+    UPTIME = "uptime"
     UNKNOWN_DEVICES = "unknown_devices"
     LOG_INCOMING_MESSAGES = "log_incoming_messages"
     CONSIDER_AWAY_INTERVAL = "consider_away_interval"
