@@ -16,7 +16,6 @@ from ..common.connectivity_status import ConnectivityStatus
 from ..common.consts import CONF_TITLE, DEFAULT_NAME
 from ..models.config_data import CONF_DEVICE_TYPE, DATA_KEYS, ConfigData
 from ..models.exceptions import LoginError
-
 from .airos import AirosClient
 from .config_manager import ConfigManager
 from .password_manager import PasswordManager
