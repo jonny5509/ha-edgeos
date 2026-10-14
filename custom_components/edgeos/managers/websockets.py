@@ -457,9 +457,7 @@ class WebSockets:
                 device_data = data.get(device_ip)
 
                 if not isinstance(device_data, dict):
-                    _LOGGER.debug(
-                        "Ignoring malformed traffic export for %s", device_ip
-                    )
+                    _LOGGER.debug("Ignoring malformed traffic export for %s", device_ip)
                     continue
 
                 if device_data is not None:
@@ -494,7 +492,9 @@ class WebSockets:
                                 )
                                 continue
 
-                            traffic[item] = traffic.get(item, 0) + service_data_item_value
+                            traffic[item] = (
+                                traffic.get(item, 0) + service_data_item_value
+                            )
 
                     self.data[WS_EXPORT_KEY][device_ip] = traffic
 
