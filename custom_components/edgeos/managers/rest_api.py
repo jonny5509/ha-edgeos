@@ -157,9 +157,10 @@ class RestAPI:
         await self.login()
 
     async def validate(self):
+        # initialize() already creates the session and performs login. Calling
+        # login() again can invalidate the first session on EdgeOS 3.x and
+        # incorrectly report invalid_server_details during config flow.
         await self.initialize()
-
-        await self.login()
 
     def _get_cookie_data(self, cookie_key):
         cookie_data = None
