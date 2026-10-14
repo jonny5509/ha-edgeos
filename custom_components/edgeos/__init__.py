@@ -7,14 +7,23 @@ import logging
 import sys
 
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import EVENT_HOMEASSISTANT_START
+from homeassistant.const import (
+    CONF_HOST,
+    CONF_PASSWORD,
+    CONF_USERNAME,
+    EVENT_HOMEASSISTANT_START,
+    Platform,
+)
+from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.core import HomeAssistant
 
 from .common.consts import DEFAULT_NAME, DOMAIN
 from .common.entity_descriptions import PLATFORMS
+from .managers.airos import AirosCoordinator
 from .managers.config_manager import ConfigManager
 from .managers.coordinator import Coordinator
 from .managers.password_manager import PasswordManager
+from .models.config_data import CONF_DEVICE_TYPE
 from .models.exceptions import LoginError
 
 _LOGGER = logging.getLogger(__name__)
@@ -34,6 +43,24 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
         _LOGGER.debug("Starting up password manager")
         await PasswordManager.decrypt(hass, entry_config, entry.entry_id)
+
+        if entry_config.get(CONF_DEVICE_TYPE) == "airOS":
+            coordinator = AirosCoordinator(
+                hass,
+                entry_config[CONF_HOST],
+                entry_config[CONF_USERNAME],
+                entry_config[CONF_PASSWORD],
+                entry.entry_id,
+            )
+            hass.data.setdefault(DOMAIN, {})[entry.entry_id] = coordinator
+            try:
+                await coordinator.async_config_entry_first_refresh()
+            except Exception as ex:
+                raise ConfigEntryNotReady("Unable to connect to the airOS device") from ex
+            await hass.config_entries.async_forward_entry_setups(
+                entry, [Platform.SENSOR]
+            )
+            return True
 
         _LOGGER.debug("Starting up configuration manager")
         config_manager = ConfigManager(hass, entry)
@@ -63,6 +90,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
         _LOGGER.debug(f"Setup status: {is_initialized}")
 
+    except ConfigEntryNotReady:
+        raise
+
     except LoginError:
         _LOGGER.info(f"Failed to login {DEFAULT_NAME} API, cannot log integration")
 
@@ -81,9 +111,16 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
     """Unload a config entry."""
     _LOGGER.info(f"Unloading {DOMAIN} integration, Entry ID: {entry.entry_id}")
 
-    coordinator: Coordinator = hass.data[DOMAIN][entry.entry_id]
-
+    coordinator = hass.data[DOMAIN][entry.entry_id]
     await coordinator.terminate()
+
+    if entry.data.get(CONF_DEVICE_TYPE) == "airOS":
+        unloaded = await hass.config_entries.async_unload_platforms(
+            entry, [Platform.SENSOR]
+        )
+        if unloaded:
+            del hass.data[DOMAIN][entry.entry_id]
+        return unloaded
 
     for platform in PLATFORMS:
         await hass.config_entries.async_forward_entry_unload(entry, platform)
@@ -99,10 +136,9 @@ async def async_remove_entry(hass: HomeAssistant, entry: ConfigEntry):
 
     entry_id = entry.entry_id
 
+    if entry.data.get(CONF_DEVICE_TYPE) == "airOS":
+        return await async_unload_entry(hass, entry)
+
     coordinator: Coordinator = hass.data[DOMAIN][entry_id]
-
     await coordinator.config_manager.remove(entry_id)
-
-    result = await async_unload_entry(hass, entry)
-
-    return result
+    return await async_unload_entry(hass, entry)
