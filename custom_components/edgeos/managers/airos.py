@@ -67,7 +67,7 @@ class AirosClient:
                 await response.read()
                 response.raise_for_status()
 
-            form = FormData()
+            form = FormData(default_to_multipart=True)
             form.add_field("username", self._username)
             form.add_field("password", self._password)
             form.add_field("uri", "/status.cgi")
