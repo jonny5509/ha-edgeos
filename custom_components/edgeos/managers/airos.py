@@ -2,24 +2,19 @@
 from __future__ import annotations
 
 from datetime import timedelta
+import logging
 import re
 import time
 from typing import Any
-from urllib.parse import quote
 
 from aiohttp import ClientError, ClientTimeout, CookieJar, FormData
-from homeassistant.const import (
-    CONF_HOST,
-    CONF_PASSWORD,
-    CONF_USERNAME,
-    UnitOfDataRate,
-    UnitOfInformation,
-)
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_create_clientsession
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 
 from ..common.consts import DOMAIN
+
+_LOGGER = logging.getLogger(__name__)
 
 _VALUE_RE = re.compile(
     r"""\b(?P<key>[a-zA-Z_][a-zA-Z0-9_]*)\s*=\s*(?P<value>"[^"]*"|-?\d+(?:\.\d+)?|true|false)""",
@@ -152,7 +147,7 @@ class AirosCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     ) -> None:
         super().__init__(
             hass,
-            logger=__import__("logging").getLogger(__name__),
+            logger=_LOGGER,
             name=f"{DOMAIN} airOS",
             update_interval=timedelta(seconds=30),
         )
@@ -191,6 +186,6 @@ class AirosCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         """Validate device credentials before saving the config entry."""
         return await self.client.async_validate()
 
-    async def async_shutdown(self) -> None:
-        """No per-entry aiohttp session cleanup is required; HA owns the session."""
-        return None
+    async def terminate(self) -> None:
+        """Stop the coordinator when its config entry unloads."""
+        self.async_set_updated_data(self.data or {})
