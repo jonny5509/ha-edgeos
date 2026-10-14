@@ -307,13 +307,34 @@ class RestAPI:
             if self._session.closed:
                 raise SessionTerminatedException()
 
-            async with self._session.post(url, data=credentials, ssl=False) as response:
-                all_cookies = self._session.cookie_jar.filter_cookies(response.url)
+            async with self._session.post(
+                url,
+                data=credentials,
+                headers={"Content-Type": "application/x-www-form-urlencoded"},
+                allow_redirects=False,
+                ssl=False,
+            ) as response:
+                # EdgeOS 3.0.1 responds to login with a 303 redirect. Do not
+                # follow it: redirecting back to "/" can create an endless loop.
+                # A 303 is not itself proof of authentication, so validate the
+                # session against the system-data API below when needed.
+                if response.status >= 400:
+                    response.raise_for_status()
 
-                for key, cookie in all_cookies.items():
+                for cookie in response.cookies.values():
                     self._cookies[cookie.key] = cookie.value
 
-                response.raise_for_status()
+                all_cookies = self._session.cookie_jar.filter_cookies(response.url)
+                for cookie in all_cookies.values():
+                    self._cookies[cookie.key] = cookie.value
+
+                html = await response.text()
+                for line in html.splitlines():
+                    if "EDGE.DeviceModel" in line:
+                        line_parts = line.split(" = ")
+                        value = line_parts[-1]
+                        self.data[API_DATA_PRODUCT] = value.replace("'", EMPTY_STRING)
+                        break
 
                 logged_in = (
                     self.beaker_session_id is not None
@@ -331,23 +352,11 @@ class RestAPI:
                     logged_in = API_DATA_SYSTEM in self.data
 
                 if logged_in:
-                    html = await response.text()
-                    html_lines = html.splitlines()
-                    for line in html_lines:
-                        if "EDGE.DeviceModel" in line:
-                            line_parts = line.split(" = ")
-                            value = line_parts[len(line_parts) - 1]
-                            self.data[API_DATA_PRODUCT] = value.replace(
-                                "'", EMPTY_STRING
-                            )
-                            # Preserve SESSION_ID returned by the EdgeOS 3.x API.
-                            if self.session_id:
-                                self.data[API_DATA_SESSION_ID] = self.session_id
-                            self.data[API_DATA_COOKIES] = self._cookies
-
-                            self._set_status(ConnectivityStatus.Connected)
-
-                            break
+                    # Preserve SESSION_ID returned by the EdgeOS 3.x API.
+                    if self.session_id:
+                        self.data[API_DATA_SESSION_ID] = self.session_id
+                    self.data[API_DATA_COOKIES] = self._cookies
+                    self._set_status(ConnectivityStatus.Connected)
                 else:
                     _LOGGER.error("Failed to login, Invalid credentials")
 
