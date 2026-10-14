@@ -6,6 +6,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
+from homeassistant.helpers import entity_registry as er
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util import slugify
 
@@ -24,6 +25,34 @@ async def async_setup_base_entry(
     entity_type: type,
     async_add_entities,
 ):
+    # Include the config-entry ID in entity unique IDs so identical routers
+    # (with the same interfaces and DHCP leases) do not collide. Migrate
+    # existing registry entries in place to preserve their entity_id values.
+    registry = er.async_get(hass)
+    entry_suffix = slugify(entry.entry_id)
+    for registry_entry in list(registry.entities.values()):
+        if (
+            registry_entry.config_entry_id != entry.entry_id
+            or registry_entry.platform != DOMAIN
+            or registry_entry.unique_id.endswith(f"_{entry_suffix}")
+        ):
+            continue
+
+        new_unique_id = slugify(f"{registry_entry.unique_id}_{entry.entry_id}")
+        existing_entity_id = registry.async_get_entity_id(
+            registry_entry.domain, registry_entry.platform, new_unique_id
+        )
+        if existing_entity_id is not None and existing_entity_id != registry_entry.entity_id:
+            _LOGGER.warning(
+                "Cannot migrate unique ID for %s because %s is already registered",
+                registry_entry.entity_id,
+                existing_entity_id,
+            )
+            continue
+
+        registry.async_update_entity(
+            registry_entry.entity_id, new_unique_id=new_unique_id
+        )
     @callback
     def _async_handle_device(
         entry_id: str, device_type: DeviceTypes, item_id: str | None = None
@@ -91,6 +120,7 @@ class IntegrationBaseEntity(CoordinatorEntity):
                 entity_description.platform,
                 entity_description.key,
                 item_id,
+                entry_id := coordinator.config_manager.entry_id,
             ]
 
             unique_id_parts_clean = [
