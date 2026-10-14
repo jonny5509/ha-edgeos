@@ -85,7 +85,7 @@ class AirosClient:
             # Do not label arbitrary HTML (proxy pages, firmware-specific
             # errors, or unexpected responses) as bad credentials.
             login_form = re.search(
-                r"<input\\b[^>]*\\btype\\s*=\\s*['\\\"]?password\\b",
+                r"<input\b[^>]*\btype\s*=\s*['\"]?password\b",
                 html,
                 re.IGNORECASE,
             )
