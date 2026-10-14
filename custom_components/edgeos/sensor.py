@@ -26,8 +26,8 @@ from .common.consts import (
     ATTR_UNIT_CONVERTOR,
     ATTR_UNIT_INFORMATION,
     ATTR_UNIT_RATE,
-    UNIT_MAPPING,
     DOMAIN,
+    UNIT_MAPPING,
 )
 from .common.entity_descriptions import IntegrationSensorEntityDescription
 from .common.enums import DeviceTypes
