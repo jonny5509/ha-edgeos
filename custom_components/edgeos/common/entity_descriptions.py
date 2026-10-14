@@ -215,7 +215,7 @@ ENTITY_DESCRIPTIONS: list[IntegrationEntityDescription] = [
     IntegrationSensorEntityDescription(
         key=EntityKeys.INTERFACE_RECEIVED_TRAFFIC,
         device_class=SensorDeviceClass.DATA_SIZE,
-        state_class=SensorStateClass.TOTAL_INCREASING,
+        state_class=SensorStateClass.TOTAL,
         icon="mdi:download-network-outline",
         device_type=DeviceTypes.INTERFACE,
         entity_validation=EntityValidation.MONITORED,
@@ -223,7 +223,7 @@ ENTITY_DESCRIPTIONS: list[IntegrationEntityDescription] = [
     IntegrationSensorEntityDescription(
         key=EntityKeys.INTERFACE_SENT_TRAFFIC,
         device_class=SensorDeviceClass.DATA_SIZE,
-        state_class=SensorStateClass.TOTAL_INCREASING,
+        state_class=SensorStateClass.TOTAL,
         icon="mdi:upload-network-outline",
         device_type=DeviceTypes.INTERFACE,
         entity_validation=EntityValidation.MONITORED,
@@ -265,7 +265,7 @@ ENTITY_DESCRIPTIONS: list[IntegrationEntityDescription] = [
     IntegrationSensorEntityDescription(
         key=EntityKeys.DEVICE_RECEIVED_TRAFFIC,
         device_class=SensorDeviceClass.DATA_SIZE,
-        state_class=SensorStateClass.TOTAL_INCREASING,
+        state_class=SensorStateClass.TOTAL,
         icon="mdi:download-network-outline",
         device_type=DeviceTypes.DEVICE,
         entity_validation=EntityValidation.MONITORED,
@@ -273,7 +273,7 @@ ENTITY_DESCRIPTIONS: list[IntegrationEntityDescription] = [
     IntegrationSensorEntityDescription(
         key=EntityKeys.DEVICE_SENT_TRAFFIC,
         device_class=SensorDeviceClass.DATA_SIZE,
-        state_class=SensorStateClass.TOTAL_INCREASING,
+        state_class=SensorStateClass.TOTAL,
         icon="mdi:upload-network-outline",
         device_type=DeviceTypes.DEVICE,
         entity_validation=EntityValidation.MONITORED,
