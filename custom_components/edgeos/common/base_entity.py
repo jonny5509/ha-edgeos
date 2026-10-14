@@ -74,12 +74,27 @@ async def async_setup_base_entry(
                 platform, device_type, is_monitored, is_admin
             )
 
-            entities = [
-                entity_type(hass, entity_description, coordinator, device_type, item_id)
-                for entity_description in entity_descriptions
-            ]
+            entities = []
+            for entity_description in entity_descriptions:
+                try:
+                    entities.append(
+                        entity_type(
+                            hass,
+                            entity_description,
+                            coordinator,
+                            device_type,
+                            item_id,
+                        )
+                    )
+                except Exception:
+                    _LOGGER.exception(
+                        "Failed to construct %s entity for %s",
+                        platform,
+                        entity_description.key,
+                    )
 
-            async_add_entities(entities, True)
+            if entities:
+                async_add_entities(entities, True)
 
         except Exception as ex:
             exc_type, exc_obj, tb = sys.exc_info()
