@@ -20,6 +20,7 @@ from homeassistant.components.sensor import (
     SensorStateClass,
 )
 from homeassistant.components.switch import SwitchEntityDescription
+from homeassistant.components.update import UpdateEntityDescription
 from homeassistant.const import PERCENTAGE, EntityCategory, Platform, UnitOfTime
 from homeassistant.helpers.entity import EntityDescription
 
@@ -64,6 +65,11 @@ class IntegrationSwitchEntityDescription(
 
 
 @dataclass(frozen=True, kw_only=True)
+class IntegrationUpdateEntityDescription(UpdateEntityDescription, IntegrationEntityDescription):
+    platform: Platform | None = Platform.UPDATE
+
+
+@dataclass(frozen=True, kw_only=True)
 class IntegrationDeviceTrackerEntityDescription(IntegrationEntityDescription):
     platform: Platform | None = Platform.DEVICE_TRACKER
 
@@ -93,6 +99,12 @@ ENTITY_DESCRIPTIONS: list[IntegrationEntityDescription] = [
     IntegrationBinarySensorEntityDescription(
         key=EntityKeys.FIRMWARE,
         device_class=BinarySensorDeviceClass.UPDATE,
+        device_type=DeviceTypes.SYSTEM,
+    ),
+    IntegrationUpdateEntityDescription(
+        key=EntityKeys.FIRMWARE_UPDATE,
+        entity_category=EntityCategory.CONFIG,
+        icon="mdi:router-network",
         device_type=DeviceTypes.SYSTEM,
     ),
     IntegrationSensorEntityDescription(
