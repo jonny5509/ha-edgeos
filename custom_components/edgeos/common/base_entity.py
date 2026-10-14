@@ -56,6 +56,7 @@ async def async_setup_base_entry(
         registry.async_update_entity(
             registry_entry.entity_id, new_unique_id=new_unique_id
         )
+
     @callback
     def _async_handle_device(
         entry_id: str, device_type: DeviceTypes, item_id: str | None = None
