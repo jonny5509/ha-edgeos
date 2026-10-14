@@ -21,7 +21,15 @@ from ..common.consts import (
 
 CONF_DEVICE_TYPE = "device_type"
 
-DATA_KEYS = [CONF_HOST, CONF_PORT, CONF_SSL, CONF_PATH, CONF_USERNAME, CONF_PASSWORD, CONF_DEVICE_TYPE]
+DATA_KEYS = [
+    CONF_HOST,
+    CONF_PORT,
+    CONF_SSL,
+    CONF_PATH,
+    CONF_USERNAME,
+    CONF_PASSWORD,
+    CONF_DEVICE_TYPE,
+]
 
 
 class ConfigData:
