@@ -149,15 +149,15 @@ class Coordinator(DataUpdateCoordinator):
     def _load_signal_handlers(self):
         @callback
         def on_api_status_changed(entry_id: str, status: ConnectivityStatus):
-            self.hass.add_job(self._on_api_status_changed(entry_id, status))
+            self.hass.add_job(self._on_api_status_changed, entry_id, status)
 
         @callback
         def on_ws_status_changed(entry_id: str, status: ConnectivityStatus):
-            self.hass.add_job(self._on_ws_status_changed(entry_id, status))
+            self.hass.add_job(self._on_ws_status_changed, entry_id, status)
 
         @callback
         def on_data_changed(entry_id: str):
-            self.hass.add_job(self._on_data_changed(entry_id))
+            self.hass.add_job(self._on_data_changed, entry_id)
 
         signal_handlers = {
             SIGNAL_API_STATUS: on_api_status_changed,
