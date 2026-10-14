@@ -72,7 +72,12 @@ class IntegrationFlowManager:
                         user_input["username"],
                         user_input["password"],
                     )
-                    if not await api.async_validate():
+                    try:
+                        valid = await api.async_validate()
+                    finally:
+                        await api.async_close()
+
+                    if not valid:
                         error_key = "invalid_admin_credentials"
                     else:
                         if self._entry is None:
