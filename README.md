@@ -117,6 +117,24 @@ _Configuration -> Integrations -> {Integration} -> Options_ <br />
 | {Router Name} {Interface Name} Sent Errors              | Sensor        | Sent errors                                                                  | Statistics: Total Increment                 |
 | {Router Name} {Interface Name} Sent Packets             | Sensor        | Sent packets                                                                 | Statistics: Total Increment                 |
 
+### Monitoring port speeds in Home Assistant
+
+The integration provides received-rate and sent-rate sensors for each monitored interface. These report live traffic rate, not the negotiated Ethernet link speed.
+
+1. Open **Settings -> Devices & services -> EdgeOS** and select the router.
+2. Open the interface device you want to monitor (for example, `eth0` or `eth1`).
+3. Turn on its **Monitored** switch. This enables the interface's traffic entities.
+4. In **Settings -> Devices & services -> Entities**, find that interface's **Received Rate** and **Sent Rate** sensors and make sure they are enabled.
+5. Add the two sensors to a dashboard using a **History Graph** card to compare incoming and outgoing traffic over time.
+
+- **Received Rate** is traffic received by that interface.
+- **Sent Rate** is traffic transmitted by that interface.
+- **Interface Speed** is the negotiated link speed; it is not the current traffic rate.
+
+The exact entity IDs depend on the router and interface names. Select the entities Home Assistant created for your own installation rather than copying entity IDs from another setup.
+
+Traffic-analysis features require both DPI and Traffic Analysis Export to be enabled on the EdgeRouter. Enabling these features may affect router performance.
+
 ## Troubleshooting
 
 ### Debug logs
