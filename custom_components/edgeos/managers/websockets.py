@@ -456,6 +456,12 @@ class WebSockets:
             for device_ip in data:
                 device_data = data.get(device_ip)
 
+                if not isinstance(device_data, dict):
+                    _LOGGER.debug(
+                        "Ignoring malformed traffic export for %s", device_ip
+                    )
+                    continue
+
                 if device_data is not None:
                     traffic: dict = {}
 
