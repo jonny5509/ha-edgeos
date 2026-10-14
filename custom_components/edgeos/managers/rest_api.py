@@ -471,8 +471,7 @@ class RestAPI:
                     virtual_interfaces = switch_data.get("vif", {})
                     if isinstance(virtual_interfaces, dict):
                         names.extend(
-                            f"{switch_name}.{vlan_id}"
-                            for vlan_id in virtual_interfaces
+                            f"{switch_name}.{vlan_id}" for vlan_id in virtual_interfaces
                         )
 
         # Preserve source order while removing duplicates.
@@ -483,7 +482,7 @@ class RestAPI:
         system_data = self.data.get(API_DATA_SYSTEM)
         names = self._parse_interfaces_from_get_dict(system_data)
         if names:
-            self.data[API_DATA_INTERFACES] = {name: True for name in names}
+            self.data[API_DATA_INTERFACES] = dict.fromkeys(names, True)
 
     async def _load_system_data(self):
         try:
