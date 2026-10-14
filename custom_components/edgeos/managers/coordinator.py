@@ -404,6 +404,22 @@ class Coordinator(DataUpdateCoordinator):
 
         device_info = processor.get_device_info(item_id)
 
+        # Child devices must reference the parent device by its registry ID.
+        # Ensure the system device exists first so discovery order cannot leave
+        # child devices unlinked during initial setup.
+        if entity_description.device_type != DeviceTypes.SYSTEM:
+            system_device_info = self._system_processor.get_device_info()
+            device_registry = dr.async_get(self.hass)
+            system_device = device_registry.async_get_or_create(
+                config_entry_id=self.config_manager.entry_id,
+                identifiers=system_device_info["identifiers"],
+                name=system_device_info.get("name"),
+                model=system_device_info.get("model"),
+                manufacturer=system_device_info.get("manufacturer"),
+                hw_version=system_device_info.get("hw_version"),
+            )
+            device_info["via_device_id"] = system_device.id
+
         return device_info
 
     def get_data(
