@@ -81,8 +81,20 @@ class AirosClient:
             raise UpdateFailed(f"Unable to contact legacy airOS device: {err}") from err
 
         if "parent.update_basic(" not in html or not re.search(r"\buptime\s*=", html):
-            raise AirosAuthenticationError(
-                "airOS did not return authenticated status data; check credentials"
+            # A failed login normally leaves the browser on the login form.
+            # Do not label arbitrary HTML (proxy pages, firmware-specific
+            # errors, or unexpected responses) as bad credentials.
+            login_form = re.search(
+                r"<input\\b[^>]*\\btype\\s*=\\s*['\\\"]?password\\b",
+                html,
+                re.IGNORECASE,
+            )
+            if response.url.path.lower().endswith("/login.cgi") or login_form:
+                raise AirosAuthenticationError(
+                    "airOS returned the login page instead of status data"
+                )
+            raise UpdateFailed(
+                "Legacy airOS returned an unexpected response instead of status data"
             )
 
         raw: dict[str, str] = {}
