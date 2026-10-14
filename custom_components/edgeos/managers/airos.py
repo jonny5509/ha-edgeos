@@ -54,8 +54,15 @@ class AirosClient:
         status_url = f"{login_url}?uri=%2Fstatus.cgi"
 
         try:
-            # The first request creates an AIROS_SESSIONID cookie. The old
-            # firmware requires a browser-like multipart login form.
+            # Visit the device root first: airOS 4 redirects through
+            # /cookiechecker and sets AIROS_SESSIONID there. Starting directly
+            # at /login.cgi can leave the subsequent POST without a valid
+            # firmware session, which looks like bad credentials.
+            async with self._session.get(self._base_url, timeout=timeout) as response:
+                await response.read()
+                response.raise_for_status()
+
+            # Load the login page in the same cookie-backed session.
             async with self._session.get(login_url, timeout=timeout) as response:
                 await response.read()
                 response.raise_for_status()
