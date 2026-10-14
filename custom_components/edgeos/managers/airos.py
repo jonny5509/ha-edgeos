@@ -64,6 +64,9 @@ class AirosClient:
             async with self._session.get(login_url, timeout=timeout) as response:
                 await response.read()
                 response.raise_for_status()
+                # Some older airOS builds expect the login POST to originate
+                # from the login page, as it does in a browser.
+                login_page_url = str(response.url)
 
             form = FormData(default_to_multipart=True)
             form.add_field("username", self._username)
@@ -72,7 +75,11 @@ class AirosClient:
             form.add_field("press", "Login")
 
             async with self._session.post(
-                status_url, data=form, allow_redirects=True, timeout=timeout
+                status_url,
+                data=form,
+                headers={"Referer": login_page_url},
+                allow_redirects=True,
+                timeout=timeout,
             ) as response:
                 response.raise_for_status()
                 html = await response.text(errors="replace")
