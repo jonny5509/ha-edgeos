@@ -221,7 +221,11 @@ class Coordinator(DataUpdateCoordinator):
                 self._api.data, self._config_manager.log_incoming_messages
             )
 
-            await self._websockets.initialize()
+            self.config_manager.entry.async_create_background_task(
+                self.hass,
+                self._websockets.initialize(),
+                f"{DOMAIN} WebSocket listener",
+            )
 
         elif status in [ConnectivityStatus.Failed, ConnectivityStatus.Disconnected]:
             await self._websockets.terminate()
