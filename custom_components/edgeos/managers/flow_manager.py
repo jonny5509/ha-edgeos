@@ -10,12 +10,12 @@ from cryptography.fernet import InvalidToken
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowHandler
+from homeassistant.helpers.update_coordinator import UpdateFailed
 
 from ..common.connectivity_status import ConnectivityStatus
 from ..common.consts import CONF_TITLE, DEFAULT_NAME
 from ..models.config_data import CONF_DEVICE_TYPE, DATA_KEYS, ConfigData
 from ..models.exceptions import LoginError
-from homeassistant.helpers.update_coordinator import UpdateFailed
 
 from .airos import AirosClient
 from .config_manager import ConfigManager
