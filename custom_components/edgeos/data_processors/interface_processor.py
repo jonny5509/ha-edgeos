@@ -214,17 +214,33 @@ class InterfaceProcessor(BaseProcessor):
                 interface.multicast = stats.get(INTERFACE_DATA_MULTICAST, 0)
                 interface.address = stats.get(ADDRESS_LIST, [])
 
+                # EdgeOS firmware versions may omit individual counters from
+                # a WebSocket update. Parse each available counter independently
+                # so one missing value does not prevent all port statistics from
+                # being refreshed.
                 directions = [interface.received, interface.sent]
 
                 for direction in directions:
                     stat_data = {}
-                    for stat_key in TRAFFIC_DATA_INTERFACE_ITEMS:
+                    for stat_key, stat_data_item in TRAFFIC_DATA_INTERFACE_ITEMS.items():
                         key = f"{direction.direction}_{stat_key}"
-                        stat_data_item = TRAFFIC_DATA_INTERFACE_ITEMS.get(stat_key)
+                        value = stats.get(key)
 
-                        stat_data[stat_data_item] = float(stats.get(key))
+                        if value is None:
+                            continue
 
-                    direction.update(stat_data)
+                        try:
+                            stat_data[stat_data_item] = float(value)
+                        except (TypeError, ValueError):
+                            _LOGGER.debug(
+                                "Ignoring invalid interface counter %s=%r for %s",
+                                key,
+                                value,
+                                interface.name,
+                            )
+
+                    if stat_data:
+                        direction.update(stat_data)
 
         except Exception as ex:
             exc_type, exc_obj, tb = sys.exc_info()
