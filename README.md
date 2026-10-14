@@ -2,10 +2,10 @@
 
 ## Maintenance Notice
 
-This integration is no longer actively developed, as I no longer have access to my ER4 for testing.  
-However, I will review and approve community contributions (issues and pull requests) if they are tested and confirmed to work.  
+This integration is no longer actively developed, as I no longer have access to my ER4 for testing.
+However, I will review and approve community contributions (issues and pull requests) if they are tested and confirmed to work.
 
-If you rely on this integration, please consider contributing fixes and improvements.  
+If you rely on this integration, please consider contributing fixes and improvements.
 pull requests are welcome!
 
 ## Description

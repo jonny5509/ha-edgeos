@@ -320,6 +320,16 @@ class RestAPI:
                     and self.beaker_session_id == self.session_id
                 )
 
+                # EdgeOS 3.x changed its login/session cookie behavior. If the
+                # legacy cookie check fails, verify authentication against the
+                # authenticated system-data endpoint instead of rejecting the
+                # credentials based on cookies alone.
+                if not logged_in:
+                    self._set_status(ConnectivityStatus.Connected)
+                    await self._load_system_data()
+                    self._update_interfaces_from_system_cache()
+                    logged_in = API_DATA_SYSTEM in self.data
+
                 if logged_in:
                     html = await response.text()
                     html_lines = html.splitlines()
@@ -330,7 +340,9 @@ class RestAPI:
                             self.data[API_DATA_PRODUCT] = value.replace(
                                 "'", EMPTY_STRING
                             )
-                            self.data[API_DATA_SESSION_ID] = self.session_id
+                            # Preserve SESSION_ID returned by the EdgeOS 3.x API.
+                            if self.session_id:
+                                self.data[API_DATA_SESSION_ID] = self.session_id
                             self.data[API_DATA_COOKIES] = self._cookies
 
                             self._set_status(ConnectivityStatus.Connected)
@@ -437,12 +449,52 @@ class RestAPI:
         if not is_valid:
             self._set_status(ConnectivityStatus.Disconnected)
 
+    def _parse_interfaces_from_get_dict(self, get_dict: dict | None) -> list[str]:
+        """Extract interface names from EdgeOS 3.x system GET data."""
+        if not isinstance(get_dict, dict):
+            return []
+
+        interfaces = get_dict.get("interfaces", {})
+        if not isinstance(interfaces, dict):
+            return []
+
+        names: list[str] = []
+        ethernet = interfaces.get("ethernet", {})
+        if isinstance(ethernet, dict):
+            names.extend(name for name in ethernet if name != "lo")
+
+        switches = interfaces.get("switch", {})
+        if isinstance(switches, dict):
+            for switch_name, switch_data in switches.items():
+                names.append(switch_name)
+                if isinstance(switch_data, dict):
+                    virtual_interfaces = switch_data.get("vif", {})
+                    if isinstance(virtual_interfaces, dict):
+                        names.extend(
+                            f"{switch_name}.{vlan_id}" for vlan_id in virtual_interfaces
+                        )
+
+        # Preserve source order while removing duplicates.
+        return list(dict.fromkeys(name for name in names if name != "lo"))
+
+    def _update_interfaces_from_system_cache(self) -> None:
+        """Populate interface data from the system GET response on EdgeOS 3.x."""
+        system_data = self.data.get(API_DATA_SYSTEM)
+        names = self._parse_interfaces_from_get_dict(system_data)
+        if names:
+            self.data[API_DATA_INTERFACES] = dict.fromkeys(names, True)
+
     async def _load_system_data(self):
         try:
             if self.status == ConnectivityStatus.Connected:
                 result_json = await self._async_get(API_URL_DATA, action=API_GET)
 
                 if result_json is not None:
+                    # EdgeOS 3.x may return the WebSocket session ID here.
+                    session_id = result_json.get("SESSION_ID")
+                    if session_id:
+                        self.data[API_DATA_SESSION_ID] = session_id
+
                     if RESPONSE_SUCCESS_KEY in result_json:
                         success_key = str(
                             result_json.get(RESPONSE_SUCCESS_KEY, "")
@@ -453,6 +505,7 @@ class RestAPI:
                                 self.data[API_DATA_SYSTEM] = result_json.get(
                                     API_GET.upper(), {}
                                 )
+                                self._update_interfaces_from_system_cache()
                         else:
                             error_message = result_json[RESPONSE_ERROR_KEY]
                             _LOGGER.error(f"Failed, Error: {error_message}")
