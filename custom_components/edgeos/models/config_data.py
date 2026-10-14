@@ -19,7 +19,9 @@ from ..common.consts import (
     WEBSOCKET_URL_TEMPLATE,
 )
 
-DATA_KEYS = [CONF_HOST, CONF_PORT, CONF_SSL, CONF_PATH, CONF_USERNAME, CONF_PASSWORD]
+CONF_DEVICE_TYPE = "device_type"
+
+DATA_KEYS = [CONF_HOST, CONF_PORT, CONF_SSL, CONF_PATH, CONF_USERNAME, CONF_PASSWORD, CONF_DEVICE_TYPE]
 
 
 class ConfigData:
@@ -92,6 +94,9 @@ class ConfigData:
                 CONF_TITLE, default=user_input.get(CONF_TITLE, DEFAULT_NAME)
             ): str,
             vol.Required(CONF_HOST, default=user_input.get(CONF_HOST)): str,
+            vol.Optional(
+                CONF_DEVICE_TYPE, default=user_input.get(CONF_DEVICE_TYPE, "EdgeOS")
+            ): vol.In(["EdgeOS", "airOS"]),
             vol.Required(CONF_USERNAME, default=user_input.get(CONF_USERNAME)): str,
             vol.Required(CONF_PASSWORD, default=user_input.get(CONF_PASSWORD)): str,
         }
