@@ -74,9 +74,7 @@ class AirosClient:
         except (ClientError, TimeoutError) as err:
             raise UpdateFailed(f"Unable to contact legacy airOS device: {err}") from err
 
-        if "parent.update_basic(" not in html or not re.search(
-            r"\buptime\s*=", html
-        ):
+        if "parent.update_basic(" not in html or not re.search(r"\buptime\s*=", html):
             raise AirosAuthenticationError(
                 "airOS did not return authenticated status data; check credentials"
             )
@@ -178,7 +176,12 @@ class AirosCoordinator(DataUpdateCoordinator[dict[str, Any]]):
                 rate_key = f"{interface}_{direction}_rate"
                 data[rate_key] = None
                 previous = self._previous.get(key)
-                if counter is not None and previous is not None and elapsed and elapsed > 0:
+                if (
+                    counter is not None
+                    and previous is not None
+                    and elapsed
+                    and elapsed > 0
+                ):
                     old_counter, old_time = previous
                     delta_time = now - old_time
                     if delta_time > 0 and counter >= old_counter:
