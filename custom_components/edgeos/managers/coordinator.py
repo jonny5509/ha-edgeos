@@ -369,6 +369,8 @@ class Coordinator(DataUpdateCoordinator):
             EntityKeys.UPDATE_API_INTERVAL: self._get_update_api_interval_data,
             EntityKeys.UNIT: self._get_unit_data,
             EntityKeys.INTERFACE_CONNECTED: self._get_interface_connected_data,
+            EntityKeys.INTERFACE_SPEED: self._get_interface_speed_data,
+            EntityKeys.INTERFACE_DUPLEX: self._get_interface_duplex_data,
             EntityKeys.INTERFACE_RECEIVED_DROPPED: self._get_interface_received_dropped_data,
             EntityKeys.INTERFACE_SENT_DROPPED: self._get_interface_sent_dropped_data,
             EntityKeys.INTERFACE_RECEIVED_ERRORS: self._get_interface_received_errors_data,
@@ -596,6 +598,18 @@ class Coordinator(DataUpdateCoordinator):
         result = {ATTR_IS_ON: interface.l1up}
 
         return result
+
+    def _get_interface_speed_data(
+        self, _entity_description, interface_name: str
+    ) -> dict | None:
+        interface = self._interface_processor.get_data(interface_name)
+        return {ATTR_STATE: interface.speed}
+
+    def _get_interface_duplex_data(
+        self, _entity_description, interface_name: str
+    ) -> dict | None:
+        interface = self._interface_processor.get_data(interface_name)
+        return {ATTR_STATE: interface.duplex}
 
     def _get_interface_received_dropped_data(
         self, _entity_description, interface_name: str
