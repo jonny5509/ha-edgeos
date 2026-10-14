@@ -115,6 +115,15 @@ ENTITY_DESCRIPTIONS: list[IntegrationEntityDescription] = [
         device_type=DeviceTypes.SYSTEM,
     ),
     IntegrationSensorEntityDescription(
+        key=EntityKeys.UPTIME,
+        name="Uptime",
+        device_class=SensorDeviceClass.DURATION,
+        native_unit_of_measurement=UnitOfTime.SECONDS,
+        state_class=SensorStateClass.MEASUREMENT,
+        icon="mdi:timer-outline",
+        device_type=DeviceTypes.SYSTEM,
+    ),
+    IntegrationSensorEntityDescription(
         key=EntityKeys.UNKNOWN_DEVICES,
         native_unit_of_measurement=UnitOfEdgeOS.DEVICES,
         state_class=SensorStateClass.MEASUREMENT,
