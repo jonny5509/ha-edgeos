@@ -144,7 +144,10 @@ class Coordinator(DataUpdateCoordinator):
         return config_manager
 
     async def on_home_assistant_start(self, _event_data: Event):
-        await self.initialize()
+        """Schedule integration initialization without blocking Home Assistant startup."""
+        self.config_manager.entry.async_create_background_task(
+            self.hass, self.initialize(), f"{DOMAIN} initialization"
+        )
 
     def _load_signal_handlers(self):
         @callback
