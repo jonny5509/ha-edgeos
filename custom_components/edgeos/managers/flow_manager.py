@@ -15,6 +15,8 @@ from ..common.connectivity_status import ConnectivityStatus
 from ..common.consts import CONF_TITLE, DEFAULT_NAME
 from ..models.config_data import CONF_DEVICE_TYPE, DATA_KEYS, ConfigData
 from ..models.exceptions import LoginError
+from homeassistant.helpers.update_coordinator import UpdateFailed
+
 from .airos import AirosClient
 from .config_manager import ConfigManager
 from .password_manager import PasswordManager
@@ -115,6 +117,10 @@ class IntegrationFlowManager:
                         )
                     else:
                         error_key = ConnectivityStatus.get_ha_error(api.status)
+
+            except UpdateFailed:
+                # Network/HTTP failures are not proof of invalid credentials.
+                error_key = "auth_general_error"
 
             except LoginError:
                 error_key = "invalid_admin_credentials"
