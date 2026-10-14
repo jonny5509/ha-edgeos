@@ -7,5 +7,5 @@
   "documentation": "https://github.com/elad-bar/ha-edgeos",
   "iot_class": "local_polling",
   "issue_tracker": "https://github.com/elad-bar/ha-edgeos/issues",
-  "version": "2.1.9"
+  "version": "2.2.0"
 }
