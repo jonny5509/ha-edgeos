@@ -97,23 +97,29 @@ class InterfaceProcessor(BaseProcessor):
             system_section = self._api_data.get(API_DATA_SYSTEM, {})
             interface_types = system_section.get(API_DATA_INTERFACES, {})
 
-            for interface_type in interface_types:
-                interfaces = interface_types.get(interface_type)
+            for interface_type, interfaces in interface_types.items():
+                if not isinstance(interfaces, dict):
+                    continue
 
-                if interfaces is not None:
-                    for interface_name in interfaces:
-                        interface_data = interfaces.get(interface_name, {})
+                try:
+                    int_type = InterfaceTypes(interface_type)
+                except (TypeError, ValueError):
+                    # EdgeOS can report interface types not modeled here
+                    # (for example pseudo-ethernet). Do not stop discovery
+                    # of valid interfaces that follow this entry.
+                    _LOGGER.debug(
+                        "Skipping unsupported interface type %s", interface_type
+                    )
+                    continue
 
-                        if interface_type in self._supported_interface_types:
-                            int_type = InterfaceTypes(interface_type)
+                if int_type not in self._supported_interface_types:
+                    _LOGGER.debug(
+                        "Skipping unsupported interface type %s", interface_type
+                    )
+                    continue
 
-                            self._extract_interface(
-                                interface_name, interface_data, int_type
-                            )
-                        else:
-                            _LOGGER.info(
-                                f"Skip loading interface {interface_name}, Type: {interface_type} is not supported"
-                            )
+                for interface_name, interface_data in interfaces.items():
+                    self._extract_interface(interface_name, interface_data, int_type)
 
         except Exception as ex:
             exc_type, exc_obj, tb = sys.exc_info()
