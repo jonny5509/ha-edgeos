@@ -54,13 +54,18 @@ class AirosClient:
         status_url = f"{login_url}?uri=%2Fstatus.cgi"
 
         try:
-            # The first request creates an AIROS_SESSIONID cookie. The old
-            # firmware requires a browser-like multipart login form.
+            # airOS 4 redirects through /cookiechecker and initializes its
+            # session cookie when the device root is visited first.
+            async with self._session.get(self._base_url, timeout=timeout) as response:
+                await response.read()
+                response.raise_for_status()
+
+            # Load the login page in the same cookie-backed session.
             async with self._session.get(login_url, timeout=timeout) as response:
                 await response.read()
                 response.raise_for_status()
 
-            form = FormData()
+            form = FormData(default_to_multipart=True)
             form.add_field("username", self._username)
             form.add_field("password", self._password)
             form.add_field("uri", "/status.cgi")
@@ -135,8 +140,10 @@ class AirosClient:
             return False
 
     async def async_close(self) -> None:
-        """Close this client's dedicated HTTP session."""
-        await self._session.close()
+        """Leave the Home Assistant-managed HTTP session open."""
+        # async_create_clientsession returns a session managed by Home Assistant.
+        # Closing it here would disrupt other integrations using the shared session.
+        return
 
 
 class AirosCoordinator(DataUpdateCoordinator[dict[str, Any]]):
