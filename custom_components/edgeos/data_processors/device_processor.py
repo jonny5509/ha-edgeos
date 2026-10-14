@@ -90,6 +90,12 @@ class DeviceProcessor(BaseProcessor):
         super()._process_api_data()
 
         try:
+            # Rebuild lease state from the latest API snapshot. Devices remain in
+            # the cache for traffic tracking, but must stop being marked leased
+            # when their DHCP lease disappears.
+            for device in self._devices.values():
+                device.is_leased = False
+
             system_section = self._api_data.get(API_DATA_SYSTEM, {})
             service = system_section.get(DATA_SYSTEM_SERVICE, {})
 
@@ -202,6 +208,11 @@ class DeviceProcessor(BaseProcessor):
 
         else:
             device_data = existing_device_data
+            device_data.hostname = hostname
+            device_data.ip = ip_address
+            device_data.mac = mac_address
+            device_data.domain = domain_name
+            device_data.is_leased = is_leased
 
         self._devices[device_data.unique_id] = device_data
         self._devices_ip_mapping[device_data.ip] = device_data.unique_id
