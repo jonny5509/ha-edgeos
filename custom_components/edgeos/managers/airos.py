@@ -136,7 +136,7 @@ class AirosClient:
         try:
             await self.async_get_status()
             return True
-        except (AirosAuthenticationError, UpdateFailed):
+        except AirosAuthenticationError:
             return False
 
     async def async_close(self) -> None:

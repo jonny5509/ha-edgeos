@@ -10,6 +10,7 @@ from cryptography.fernet import InvalidToken
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.data_entry_flow import FlowHandler
+from homeassistant.helpers.update_coordinator import UpdateFailed
 
 from ..common.connectivity_status import ConnectivityStatus
 from ..common.consts import CONF_TITLE, DEFAULT_NAME
@@ -115,6 +116,10 @@ class IntegrationFlowManager:
                         )
                     else:
                         error_key = ConnectivityStatus.get_ha_error(api.status)
+
+            except UpdateFailed:
+                # Network/HTTP failures are not proof of invalid credentials.
+                error_key = "auth_general_error"
 
             except LoginError:
                 error_key = "invalid_admin_credentials"
