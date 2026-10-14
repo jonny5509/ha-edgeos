@@ -65,7 +65,9 @@ class IntegrationSwitchEntityDescription(
 
 
 @dataclass(frozen=True, kw_only=True)
-class IntegrationUpdateEntityDescription(UpdateEntityDescription, IntegrationEntityDescription):
+class IntegrationUpdateEntityDescription(
+    UpdateEntityDescription, IntegrationEntityDescription
+):
     platform: Platform | None = Platform.UPDATE
 
 
