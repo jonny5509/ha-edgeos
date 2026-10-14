@@ -56,7 +56,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             try:
                 await coordinator.async_config_entry_first_refresh()
             except Exception as ex:
-                raise ConfigEntryNotReady("Unable to connect to the airOS device") from ex
+                raise ConfigEntryNotReady(
+                    "Unable to connect to the airOS device"
+                ) from ex
             await hass.config_entries.async_forward_entry_setups(
                 entry, [Platform.SENSOR]
             )
