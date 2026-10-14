@@ -163,12 +163,12 @@ class IntegrationBaseEntity(CoordinatorEntity):
     def _is_allowed_for_monitoring(self) -> bool:
         is_allowed_for_monitoring = False
 
-        if self._device_type == DeviceTypes.DEVICE:
+        if self._device_type == DeviceTypes.INTERFACE:
             is_allowed_for_monitoring = (
                 self.coordinator.config_manager.get_monitored_interface(self._item_id)
             )
 
-        if self._device_type == DeviceTypes.DEVICE:
+        elif self._device_type == DeviceTypes.DEVICE:
             is_allowed_for_monitoring = (
                 self.coordinator.config_manager.get_monitored_device(self._item_id)
             )
