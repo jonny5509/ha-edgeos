@@ -456,6 +456,10 @@ class WebSockets:
             for device_ip in data:
                 device_data = data.get(device_ip)
 
+                if not isinstance(device_data, dict):
+                    _LOGGER.debug("Ignoring malformed traffic export for %s", device_ip)
+                    continue
+
                 if device_data is not None:
                     traffic: dict = {}
 
@@ -464,18 +468,33 @@ class WebSockets:
                             stats_key = f"{direction}_{key}"
                             traffic[stats_key] = float(0)
 
-                    for service in device_data:
-                        service_data = device_data.get(service, {})
-                        for item in service_data:
-                            current_value = traffic.get(item, 0)
-                            service_data_item_value = 0
+                    for service, service_data in device_data.items():
+                        if not isinstance(service_data, dict):
+                            _LOGGER.debug(
+                                "Ignoring malformed traffic data for %s/%s",
+                                device_ip,
+                                service,
+                            )
+                            continue
 
-                            if item in service_data and service_data[item] != "":
-                                service_data_item_value = float(service_data[item])
+                        for item, raw_value in service_data.items():
+                            if raw_value in (None, ""):
+                                continue
 
-                            traffic_value = current_value + service_data_item_value
+                            try:
+                                service_data_item_value = float(raw_value)
+                            except (TypeError, ValueError):
+                                _LOGGER.debug(
+                                    "Ignoring malformed traffic counter %s for %s: %r",
+                                    item,
+                                    device_ip,
+                                    raw_value,
+                                )
+                                continue
 
-                            traffic[item] = traffic_value
+                            traffic[item] = (
+                                traffic.get(item, 0) + service_data_item_value
+                            )
 
                     self.data[WS_EXPORT_KEY][device_ip] = traffic
 
@@ -495,31 +514,52 @@ class WebSockets:
                 _LOGGER.debug(f"{WS_INTERFACES_KEY} is empty")
                 return
 
-            for name in data:
-                interface_data = data.get(name)
+            for name, interface_data in data.items():
+                if not isinstance(interface_data, dict):
+                    _LOGGER.debug("Ignoring malformed interface data for %s", name)
+                    continue
 
-                interface = {}
+                # Preserve the last valid counters when an EdgeOS message omits
+                # a field or sends a malformed value.
+                interface = dict(self.data[WS_INTERFACES_KEY].get(name, {}))
 
-                for item in interface_data:
-                    item_data = interface_data.get(item)
-
+                for item, item_data in interface_data.items():
                     if ADDRESS_LIST == item:
                         interface[item] = item_data
 
                     elif INTERFACES_STATS == item:
-                        interface[INTERFACE_DATA_MULTICAST] = float(
-                            item_data.get(INTERFACE_DATA_MULTICAST)
+                        if not isinstance(item_data, dict):
+                            _LOGGER.debug(
+                                "Ignoring malformed statistics for interface %s", name
+                            )
+                            continue
+
+                        counter_keys = (
+                            INTERFACE_DATA_MULTICAST,
+                            *(
+                                f"{direction}_{key}"
+                                for direction in TRAFFIC_DATA_DIRECTIONS
+                                for key in TRAFFIC_DATA_INTERFACE_ITEMS
+                            ),
                         )
 
-                        for direction in TRAFFIC_DATA_DIRECTIONS:
-                            for key in TRAFFIC_DATA_INTERFACE_ITEMS:
-                                stats_key = f"{direction}_{key}"
+                        for stats_key in counter_keys:
+                            raw_value = item_data.get(stats_key)
+                            if raw_value in (None, ""):
+                                continue
 
-                                interface[stats_key] = float(item_data.get(stats_key))
+                            try:
+                                interface[stats_key] = float(raw_value)
+                            except (TypeError, ValueError):
+                                _LOGGER.debug(
+                                    "Ignoring malformed interface counter %s for %s: %r",
+                                    stats_key,
+                                    name,
+                                    raw_value,
+                                )
 
-                    else:
-                        if item in INTERFACES_MAIN_MAP:
-                            interface[item] = item_data
+                    elif item in INTERFACES_MAIN_MAP:
+                        interface[item] = item_data
 
                 self.data[WS_INTERFACES_KEY][name] = interface
 
