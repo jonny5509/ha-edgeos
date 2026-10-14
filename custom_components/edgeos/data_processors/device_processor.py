@@ -29,6 +29,11 @@ from .base_processor import BaseProcessor
 _LOGGER = logging.getLogger(__name__)
 
 
+def _as_dict(value) -> dict:
+    """Return API data as a dictionary, ignoring null or malformed sections."""
+    return value if isinstance(value, dict) else {}
+
+
 class DeviceProcessor(BaseProcessor):
     _devices: dict[str, EdgeOSDeviceData]
     _devices_ip_mapping: dict[str, str]
@@ -96,26 +101,30 @@ class DeviceProcessor(BaseProcessor):
             for device in self._devices.values():
                 device.is_leased = False
 
-            system_section = self._api_data.get(API_DATA_SYSTEM, {})
-            service = system_section.get(DATA_SYSTEM_SERVICE, {})
+            system_section = _as_dict(self._api_data.get(API_DATA_SYSTEM))
+            service = _as_dict(system_section.get(DATA_SYSTEM_SERVICE))
 
-            dhcp_server = service.get(DATA_SYSTEM_SERVICE_DHCP_SERVER, {})
-            shared_network_names = dhcp_server.get(DHCP_SERVER_SHARED_NETWORK_NAME, {})
+            dhcp_server = _as_dict(service.get(DATA_SYSTEM_SERVICE_DHCP_SERVER))
+            shared_network_names = _as_dict(
+                dhcp_server.get(DHCP_SERVER_SHARED_NETWORK_NAME)
+            )
 
             for shared_network_name in shared_network_names:
-                shared_network_name_data = shared_network_names.get(
-                    shared_network_name, {}
+                shared_network_name_data = _as_dict(
+                    shared_network_names.get(shared_network_name)
                 )
-                subnets = shared_network_name_data.get(DHCP_SERVER_SUBNET, {})
+                subnets = _as_dict(shared_network_name_data.get(DHCP_SERVER_SUBNET))
 
                 for subnet in subnets:
-                    subnet_data = subnets.get(subnet, {})
+                    subnet_data = _as_dict(subnets.get(subnet))
 
                     domain_name = subnet_data.get(SYSTEM_DATA_DOMAIN_NAME)
-                    static_mappings = subnet_data.get(DHCP_SERVER_STATIC_MAPPING, {})
+                    static_mappings = _as_dict(
+                        subnet_data.get(DHCP_SERVER_STATIC_MAPPING)
+                    )
 
                     for hostname in static_mappings:
-                        static_mapping_data = static_mappings.get(hostname, {})
+                        static_mapping_data = _as_dict(static_mappings.get(hostname))
 
                         self._set_device(
                             hostname, domain_name, static_mapping_data, False
@@ -132,11 +141,11 @@ class DeviceProcessor(BaseProcessor):
 
     def _process_ws_data(self):
         try:
-            device_data = self._ws_data.get(WS_EXPORT_KEY, {})
+            device_data = _as_dict(self._ws_data.get(WS_EXPORT_KEY))
 
             for device_ip in device_data:
                 device_item = self._get_device_by_ip(device_ip)
-                stats = device_data.get(device_ip)
+                stats = _as_dict(device_data.get(device_ip))
 
                 if device_item is not None:
                     self._update_device_stats(device_item, stats)
@@ -151,14 +160,16 @@ class DeviceProcessor(BaseProcessor):
 
     def _update_leased_devices(self):
         try:
-            data_leases = self._api_data.get(API_DATA_DHCP_LEASES, {})
-            data_server_leases = data_leases.get(DHCP_SERVER_LEASES, {})
+            data_leases = _as_dict(self._api_data.get(API_DATA_DHCP_LEASES))
+            data_server_leases = _as_dict(data_leases.get(DHCP_SERVER_LEASES))
 
             for subnet in data_server_leases:
-                subnet_data = data_server_leases.get(subnet, {})
+                subnet_data = _as_dict(data_server_leases.get(subnet))
 
                 for ip in subnet_data:
                     device_data = subnet_data.get(ip)
+                    if not isinstance(device_data, dict):
+                        continue
 
                     hostname = device_data.get(DHCP_SERVER_LEASES_CLIENT_HOSTNAME)
 
