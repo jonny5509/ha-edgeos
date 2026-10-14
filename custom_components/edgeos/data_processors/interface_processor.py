@@ -227,7 +227,10 @@ class InterfaceProcessor(BaseProcessor):
                         data_item: getattr(direction, data_item)
                         for data_item in TRAFFIC_DATA_INTERFACE_ITEMS.values()
                     }
-                    for stat_key, stat_data_item in TRAFFIC_DATA_INTERFACE_ITEMS.items():
+                    for (
+                        stat_key,
+                        stat_data_item,
+                    ) in TRAFFIC_DATA_INTERFACE_ITEMS.items():
                         key = f"{direction.direction}_{stat_key}"
                         value = stats.get(key)
 
