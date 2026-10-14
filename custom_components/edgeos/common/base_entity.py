@@ -5,8 +5,8 @@ from typing import Any
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import Platform
 from homeassistant.core import HomeAssistant, callback
-from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers import entity_registry as er
+from homeassistant.helpers.dispatcher import async_dispatcher_connect
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 from homeassistant.util import slugify
 
@@ -42,7 +42,10 @@ async def async_setup_base_entry(
         existing_entity_id = registry.async_get_entity_id(
             registry_entry.domain, registry_entry.platform, new_unique_id
         )
-        if existing_entity_id is not None and existing_entity_id != registry_entry.entity_id:
+        if (
+            existing_entity_id is not None
+            and existing_entity_id != registry_entry.entity_id
+        ):
             _LOGGER.warning(
                 "Cannot migrate unique ID for %s because %s is already registered",
                 registry_entry.entity_id,
@@ -120,7 +123,7 @@ class IntegrationBaseEntity(CoordinatorEntity):
                 entity_description.platform,
                 entity_description.key,
                 item_id,
-                entry_id := coordinator.config_manager.entry_id,
+                coordinator.config_manager.entry_id,
             ]
 
             unique_id_parts_clean = [
