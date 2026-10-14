@@ -121,7 +121,7 @@ class DeviceProcessor(BaseProcessor):
                             hostname, domain_name, static_mapping_data, False
                         )
 
-                self._update_leased_devices()
+            self._update_leased_devices()
         except Exception as ex:
             exc_type, exc_obj, tb = sys.exc_info()
             line_number = tb.tb_lineno
