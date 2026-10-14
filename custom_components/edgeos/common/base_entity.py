@@ -56,6 +56,7 @@ async def async_setup_base_entry(
         registry.async_update_entity(
             registry_entry.entity_id, new_unique_id=new_unique_id
         )
+
     @callback
     def _async_handle_device(
         entry_id: str, device_type: DeviceTypes, item_id: str | None = None
@@ -163,12 +164,12 @@ class IntegrationBaseEntity(CoordinatorEntity):
     def _is_allowed_for_monitoring(self) -> bool:
         is_allowed_for_monitoring = False
 
-        if self._device_type == DeviceTypes.DEVICE:
+        if self._device_type == DeviceTypes.INTERFACE:
             is_allowed_for_monitoring = (
                 self.coordinator.config_manager.get_monitored_interface(self._item_id)
             )
 
-        if self._device_type == DeviceTypes.DEVICE:
+        elif self._device_type == DeviceTypes.DEVICE:
             is_allowed_for_monitoring = (
                 self.coordinator.config_manager.get_monitored_device(self._item_id)
             )
