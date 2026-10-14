@@ -51,6 +51,8 @@ class EntityKeys(StrEnum):
     INTERFACE_SENT_TRAFFIC = "interface_sent_traffic"
     INTERFACE_MONITORED = "interface_monitored"
     INTERFACE_STATUS = "interface_status"
+    INTERFACE_SPEED = "interface_speed"
+    INTERFACE_DUPLEX = "interface_duplex"
 
     DEVICE_RECEIVED_RATE = "device_received_rate"
     DEVICE_SENT_RATE = "device_sent_rate"
