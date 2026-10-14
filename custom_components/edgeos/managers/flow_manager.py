@@ -102,7 +102,9 @@ class IntegrationFlowManager:
             if error_key is not None:
                 form_errors = {"base": error_key}
 
-                _LOGGER.warning("Failed to create integration, Error Key: %s", error_key)
+                _LOGGER.warning(
+                    "Failed to create integration, Error Key: %s", error_key
+                )
 
         schema = ConfigData.default_schema(user_input)
 
