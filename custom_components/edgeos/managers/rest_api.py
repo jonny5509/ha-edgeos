@@ -333,9 +333,7 @@ class RestAPI:
                     if "EDGE.DeviceModel" in line:
                         line_parts = line.split(" = ")
                         value = line_parts[-1]
-                        self.data[API_DATA_PRODUCT] = value.replace(
-                            "'", EMPTY_STRING
-                        )
+                        self.data[API_DATA_PRODUCT] = value.replace("'", EMPTY_STRING)
                         break
 
                 logged_in = (
