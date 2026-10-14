@@ -85,8 +85,11 @@ async def async_setup_base_entry(
             exc_type, exc_obj, tb = sys.exc_info()
             line_number = tb.tb_lineno
 
-            _LOGGER.error(
-                f"Failed to initialize {platform}, Error: {ex}, Line: {line_number}"
+            _LOGGER.exception(
+                "Failed to initialize %s, Error: %s, Line: %s",
+                platform,
+                ex,
+                line_number,
             )
 
     for add_component_signal in ADD_COMPONENT_SIGNALS:
@@ -148,9 +151,13 @@ class IntegrationBaseEntity(CoordinatorEntity):
             exc_type, exc_obj, tb = sys.exc_info()
             line_number = tb.tb_lineno
 
-            _LOGGER.error(
-                f"Failed to initialize {entity_description}, Error: {ex}, Line: {line_number}"
+            _LOGGER.exception(
+                "Failed to initialize %s, Error: %s, Line: %s",
+                entity_description,
+                ex,
+                line_number,
             )
+            raise
 
     @property
     def _local_coordinator(self) -> Coordinator:
