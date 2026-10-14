@@ -74,19 +74,37 @@ async def async_setup_base_entry(
                 platform, device_type, is_monitored, is_admin
             )
 
-            entities = [
-                entity_type(hass, entity_description, coordinator, device_type, item_id)
-                for entity_description in entity_descriptions
-            ]
+            entities = []
+            for entity_description in entity_descriptions:
+                try:
+                    entities.append(
+                        entity_type(
+                            hass,
+                            entity_description,
+                            coordinator,
+                            device_type,
+                            item_id,
+                        )
+                    )
+                except Exception:
+                    _LOGGER.exception(
+                        "Failed to construct %s entity for %s",
+                        platform,
+                        entity_description.key,
+                    )
 
-            async_add_entities(entities, True)
+            if entities:
+                async_add_entities(entities, True)
 
         except Exception as ex:
             exc_type, exc_obj, tb = sys.exc_info()
             line_number = tb.tb_lineno
 
-            _LOGGER.error(
-                f"Failed to initialize {platform}, Error: {ex}, Line: {line_number}"
+            _LOGGER.exception(
+                "Failed to initialize %s, Error: %s, Line: %s",
+                platform,
+                ex,
+                line_number,
             )
 
     for add_component_signal in ADD_COMPONENT_SIGNALS:
@@ -148,9 +166,13 @@ class IntegrationBaseEntity(CoordinatorEntity):
             exc_type, exc_obj, tb = sys.exc_info()
             line_number = tb.tb_lineno
 
-            _LOGGER.error(
-                f"Failed to initialize {entity_description}, Error: {ex}, Line: {line_number}"
+            _LOGGER.exception(
+                "Failed to initialize %s, Error: %s, Line: %s",
+                entity_description,
+                ex,
+                line_number,
             )
+            raise
 
     @property
     def _local_coordinator(self) -> Coordinator:
