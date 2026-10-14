@@ -14,8 +14,8 @@ from homeassistant.const import (
     EVENT_HOMEASSISTANT_START,
     Platform,
 )
-from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.core import HomeAssistant
+from homeassistant.exceptions import ConfigEntryNotReady
 
 from .common.consts import DEFAULT_NAME, DOMAIN
 from .common.entity_descriptions import PLATFORMS
