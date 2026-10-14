@@ -74,7 +74,9 @@ class AirosClient:
         except (ClientError, TimeoutError) as err:
             raise UpdateFailed(f"Unable to contact legacy airOS device: {err}") from err
 
-        if "parent.update_basic(" not in html or not re.search(r"\buptime\s*=", html):
+        if "parent.update_basic(" not in html or not re.search(
+            r"\buptime\s*=", html
+        ):
             raise AirosAuthenticationError(
                 "airOS did not return authenticated status data; check credentials"
             )
@@ -187,5 +189,5 @@ class AirosCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         return await self.client.async_validate()
 
     async def terminate(self) -> None:
-        """Stop the coordinator when its config entry unloads."""
-        self.async_set_updated_data(self.data or {})
+        """Stop scheduled refreshes when the config entry unloads."""
+        await self.async_shutdown()
