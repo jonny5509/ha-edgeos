@@ -222,7 +222,7 @@ class Coordinator(DataUpdateCoordinator):
 
             await self._websockets.initialize()
 
-        elif status in [ConnectivityStatus.Failed]:
+        elif status in [ConnectivityStatus.Failed, ConnectivityStatus.Disconnected]:
             await self._websockets.terminate()
 
             await sleep(API_RECONNECT_INTERVAL.total_seconds())
