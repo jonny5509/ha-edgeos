@@ -41,14 +41,10 @@ class EdgeOSDeviceData:
 
     @property
     def last_activity(self) -> int:
-        received_activity = int(self.received.last_activity)
-        sent_activity = int(self.sent.last_activity)
-
-        last_activity = (
-            received_activity if received_activity > sent_activity else sent_activity
-        )
-
-        return last_activity
+        # Incoming traffic can continue after a client leaves the network.
+        # Base presence on outbound activity so RX traffic alone doesn't keep
+        # the device tracker marked as home.
+        return int(self.sent.last_activity)
 
     @property
     def last_activity_in_seconds(self) -> int:
