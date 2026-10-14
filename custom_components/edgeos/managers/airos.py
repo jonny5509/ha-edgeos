@@ -89,7 +89,7 @@ class AirosClient:
                 html,
                 re.IGNORECASE,
             )
-            if response.url.path.lower().endswith("/login.cgi") or login_form:
+            if login_form:
                 raise AirosAuthenticationError(
                     "airOS returned the login page instead of status data"
                 )
