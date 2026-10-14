@@ -45,7 +45,8 @@ class IntegrationFlowManager:
 
     async def async_step(self, user_input: dict | None = None):
         """Manage the domain options."""
-        _LOGGER.info(f"Config flow started, Step: {self._flow_id}, Input: {user_input}")
+        # Never log config-flow input: it contains credentials.
+        _LOGGER.info("Config flow started, Step: %s", self._flow_id)
 
         form_errors = None
 
@@ -56,8 +57,6 @@ class IntegrationFlowManager:
             else:
                 user_input = {key: self._entry.data[key] for key in self._entry.data}
                 user_input[CONF_TITLE] = self._entry.title
-
-                _LOGGER.info(user_input)
 
                 await PasswordManager.decrypt(
                     self._hass, user_input, self._entry.entry_id
@@ -103,7 +102,7 @@ class IntegrationFlowManager:
             if error_key is not None:
                 form_errors = {"base": error_key}
 
-                _LOGGER.warning(f"Failed to create integration, Error Key: {error_key}")
+                _LOGGER.warning("Failed to create integration, Error Key: %s", error_key)
 
         schema = ConfigData.default_schema(user_input)
 
