@@ -30,6 +30,7 @@ class EntityKeys(StrEnum):
     CPU_USAGE = "cpu_usage"
     RAM_USAGE = "ram_usage"
     FIRMWARE = "firmware"
+    FIRMWARE_UPDATE = "firmware_update"
     LAST_RESTART = "last_restart"
     UNKNOWN_DEVICES = "unknown_devices"
     LOG_INCOMING_MESSAGES = "log_incoming_messages"
