@@ -208,10 +208,14 @@ class DeviceProcessor(BaseProcessor):
 
         else:
             device_data = existing_device_data
-            device_data.hostname = hostname
-            device_data.ip = ip_address
-            device_data.mac = mac_address
-            device_data.domain = domain_name
+            if hostname not in (None, ""):
+                device_data.hostname = hostname
+            if ip_address is not None:
+                device_data.ip = ip_address
+            if mac_address is not None:
+                device_data.mac = mac_address
+            if domain_name is not None:
+                device_data.domain = domain_name
             device_data.is_leased = is_leased
 
         self._devices[device_data.unique_id] = device_data
