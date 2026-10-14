@@ -149,6 +149,18 @@ ENTITY_DESCRIPTIONS: list[IntegrationEntityDescription] = [
         device_type=DeviceTypes.INTERFACE,
     ),
     IntegrationSensorEntityDescription(
+        key=EntityKeys.INTERFACE_SPEED,
+        icon="mdi:speedometer",
+        device_type=DeviceTypes.INTERFACE,
+        entity_validation=EntityValidation.MONITORED,
+    ),
+    IntegrationSensorEntityDescription(
+        key=EntityKeys.INTERFACE_DUPLEX,
+        icon="mdi:ethernet",
+        device_type=DeviceTypes.INTERFACE,
+        entity_validation=EntityValidation.MONITORED,
+    ),
+    IntegrationSensorEntityDescription(
         key=EntityKeys.INTERFACE_RECEIVED_DROPPED,
         native_unit_of_measurement=UnitOfEdgeOS.DROPPED,
         state_class=SensorStateClass.MEASUREMENT,
