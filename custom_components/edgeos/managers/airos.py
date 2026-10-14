@@ -135,6 +135,10 @@ class AirosClient:
         except (AirosAuthenticationError, UpdateFailed):
             return False
 
+    async def async_close(self) -> None:
+        """Close this client's dedicated HTTP session."""
+        await self._session.close()
+
 
 class AirosCoordinator(DataUpdateCoordinator[dict[str, Any]]):
     """Poll a legacy airOS device and derive rates from byte counters."""
@@ -189,5 +193,6 @@ class AirosCoordinator(DataUpdateCoordinator[dict[str, Any]]):
         return await self.client.async_validate()
 
     async def terminate(self) -> None:
-        """Stop scheduled refreshes when the config entry unloads."""
+        """Stop scheduled refreshes and close the HTTP session."""
         await self.async_shutdown()
+        await self.client.async_close()
