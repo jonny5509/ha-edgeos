@@ -13,8 +13,9 @@ from homeassistant.data_entry_flow import FlowHandler
 
 from ..common.connectivity_status import ConnectivityStatus
 from ..common.consts import CONF_TITLE, DEFAULT_NAME
-from ..models.config_data import DATA_KEYS, ConfigData
+from ..models.config_data import CONF_DEVICE_TYPE, DATA_KEYS, ConfigData
 from ..models.exceptions import LoginError
+from .airos import AirosClient
 from .config_manager import ConfigManager
 from .password_manager import PasswordManager
 from .rest_api import RestAPI
@@ -64,34 +65,51 @@ class IntegrationFlowManager:
 
         else:
             try:
-                await self._config_manager.initialize(user_input)
-                config_data = ConfigData()
-                config_data.update(user_input)
-
-                api = RestAPI(self._hass, config_data)
-
-                await api.validate()
-
-                if api.status == ConnectivityStatus.Connected:
-                    _LOGGER.debug("User inputs are valid")
-
-                    if self._entry is None:
-                        data = copy(user_input)
-
+                if user_input.get(CONF_DEVICE_TYPE) == "airOS":
+                    api = AirosClient(
+                        self._hass,
+                        user_input["host"],
+                        user_input["username"],
+                        user_input["password"],
+                    )
+                    if not await api.async_validate():
+                        error_key = "invalid_admin_credentials"
                     else:
-                        data = await self.remap_entry_data(user_input)
+                        if self._entry is None:
+                            data = copy(user_input)
+                        else:
+                            data = await self.remap_entry_data(user_input)
 
-                    await PasswordManager.encrypt(self._hass, data)
-
-                    title = data.get(CONF_TITLE, DEFAULT_NAME)
-
-                    if CONF_TITLE in data:
-                        data.pop(CONF_TITLE)
-
-                    return self._flow_handler.async_create_entry(title=title, data=data)
-
+                        await PasswordManager.encrypt(self._hass, data)
+                        title = data.get(CONF_TITLE, DEFAULT_NAME)
+                        data.pop(CONF_TITLE, None)
+                        return self._flow_handler.async_create_entry(
+                            title=title, data=data
+                        )
                 else:
-                    error_key = ConnectivityStatus.get_ha_error(api.status)
+                    await self._config_manager.initialize(user_input)
+                    config_data = ConfigData()
+                    config_data.update(user_input)
+
+                    api = RestAPI(self._hass, config_data)
+                    await api.validate()
+
+                    if api.status == ConnectivityStatus.Connected:
+                        _LOGGER.debug("User inputs are valid")
+
+                        if self._entry is None:
+                            data = copy(user_input)
+                        else:
+                            data = await self.remap_entry_data(user_input)
+
+                        await PasswordManager.encrypt(self._hass, data)
+                        title = data.get(CONF_TITLE, DEFAULT_NAME)
+                        data.pop(CONF_TITLE, None)
+                        return self._flow_handler.async_create_entry(
+                            title=title, data=data
+                        )
+                    else:
+                        error_key = ConnectivityStatus.get_ha_error(api.status)
 
             except LoginError:
                 error_key = "invalid_admin_credentials"
