@@ -361,6 +361,7 @@ class Coordinator(DataUpdateCoordinator):
             EntityKeys.CPU_USAGE: self._get_cpu_usage_data,
             EntityKeys.RAM_USAGE: self._get_ram_usage_data,
             EntityKeys.FIRMWARE: self._get_firmware_data,
+            EntityKeys.FIRMWARE_UPDATE: self._get_firmware_update_data,
             EntityKeys.LAST_RESTART: self._get_last_restart_data,
             EntityKeys.UNKNOWN_DEVICES: self._get_unknown_devices_data,
             EntityKeys.LOG_INCOMING_MESSAGES: self._get_log_incoming_messages_data,
@@ -513,6 +514,16 @@ class Coordinator(DataUpdateCoordinator):
         }
 
         return result
+
+    def _get_firmware_update_data(self, _entity_description) -> dict | None:
+        data = self._system_processor.get()
+
+        return {
+            "installed_version": data.fw_version,
+            "latest_version": data.upgrade_version,
+            "release_url": data.upgrade_url,
+            "title": "EdgeOS firmware",
+        }
 
     def _get_last_restart_data(self, _entity_description) -> dict | None:
         data = self._system_processor.get()
