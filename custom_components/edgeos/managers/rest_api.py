@@ -340,7 +340,9 @@ class RestAPI:
                             self.data[API_DATA_PRODUCT] = value.replace(
                                 "'", EMPTY_STRING
                             )
-                            self.data[API_DATA_SESSION_ID] = self.session_id
+                            # Preserve SESSION_ID returned by the EdgeOS 3.x API.
+                            if self.session_id:
+                                self.data[API_DATA_SESSION_ID] = self.session_id
                             self.data[API_DATA_COOKIES] = self._cookies
 
                             self._set_status(ConnectivityStatus.Connected)
