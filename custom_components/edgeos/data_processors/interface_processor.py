@@ -221,7 +221,12 @@ class InterfaceProcessor(BaseProcessor):
                 directions = [interface.received, interface.sent]
 
                 for direction in directions:
-                    stat_data = {}
+                    # Start with current values so omitted counters do not reset
+                    # previously received readings to zero or None.
+                    stat_data = {
+                        data_item: getattr(direction, data_item)
+                        for data_item in TRAFFIC_DATA_INTERFACE_ITEMS.values()
+                    }
                     for stat_key, stat_data_item in TRAFFIC_DATA_INTERFACE_ITEMS.items():
                         key = f"{direction.direction}_{stat_key}"
                         value = stats.get(key)
@@ -239,8 +244,7 @@ class InterfaceProcessor(BaseProcessor):
                                 interface.name,
                             )
 
-                    if stat_data:
-                        direction.update(stat_data)
+                    direction.update(stat_data)
 
         except Exception as ex:
             exc_type, exc_obj, tb = sys.exc_info()
