@@ -44,7 +44,8 @@ class BaseProcessor:
         system_section = self._api_data.get(API_DATA_SYSTEM, {})
         system_details = system_section.get(DATA_SYSTEM_SYSTEM, {})
 
-        self._hostname = system_details.get(SYSTEM_DATA_HOSTNAME).upper()
+        hostname = system_details.get(SYSTEM_DATA_HOSTNAME)
+        self._hostname = hostname.upper() if isinstance(hostname, str) else None
 
     def _process_ws_data(self):
         pass
