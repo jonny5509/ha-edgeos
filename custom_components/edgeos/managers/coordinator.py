@@ -527,9 +527,14 @@ class Coordinator(DataUpdateCoordinator):
     def _get_unknown_devices_data(self, _entity_description) -> dict | None:
         leased_devices = self._device_processor.get_leased_devices()
 
+        # Preserve the legacy attribute name used by existing automations,
+        # while keeping the current per-IP attributes available.
+        attributes = dict(leased_devices)
+        attributes["leased"] = dict(leased_devices)
+
         result = {
             ATTR_STATE: len(leased_devices.keys()),
-            ATTR_ATTRIBUTES: leased_devices,
+            ATTR_ATTRIBUTES: attributes,
         }
 
         return result
